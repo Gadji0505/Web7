@@ -1,135 +1,94 @@
-🤖️ gpt-4o
+import java.util.Scanner;
 
-Конечно! Вот пример реализации класса «Телефонный справочник» на языке Java. Этот класс будет включать методы для добавления, удаления и поиска записей, а также для сортировки по различным полям.
+class DrobnoeChislo {
+    private int celayaChast; // Целая часть
+    private double drobnayaChast; // Дробная часть (в диапазоне от 0 до 1)
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-class PhoneBookEntry {
-    private String name;
-    private String phone;
-    private String email;
-
-    public PhoneBookEntry(String name, String phone, String email) {
-        this.name = name;
-        this.phone = phone;
-        this.email = email;
+    // Конструктор
+    public DrobnoeChislo(int celayaChast, double drobnayaChast) {
+        this.celayaChast = celayaChast;
+        this.drobnayaChast = drobnayaChast;
     }
 
-    public String getName() {
-        return name;
+    // Метод сложения
+    public DrobnoeChislo add(DrobnoeChislo other) {
+        int newCelaya = this.celayaChast + other.celayaChast;
+        double newDrob = this.drobnayaChast + other.drobnayaChast;
+
+        if (newDrob >= 1) {
+            newCelaya += 1;
+            newDrob -= 1;
+        }
+
+        return new DrobnoeChislo(newCelaya, newDrob);
     }
 
-    public String getPhone() {
-        return phone;
+    // Метод вычитания
+    public DrobnoeChislo subtract(DrobnoeChislo other) {
+        int newCelaya = this.celayaChast - other.celayaChast;
+        double newDrob = this.drobnayaChast - other.drobnayaChast;
+
+        if (newDrob < 0) {
+            newCelaya -= 1;
+            newDrob += 1;
+        }
+
+        return new DrobnoeChislo(newCelaya, newDrob);
     }
 
-    public String getEmail() {
-        return email;
+    // Метод умножения
+    public DrobnoeChislo multiply(DrobnoeChislo other) {
+        double totalSelf = this.celayaChast + this.drobnayaChast;
+        double totalOther = other.celayaChast + other.drobnayaChast;
+        double result = totalSelf * totalOther;
+
+        return new DrobnoeChislo((int) result, result % 1);
+    }
+
+    // Метод для сравнения
+    public boolean isLessThan(DrobnoeChislo other) {
+        return (this.celayaChast + this.drobnayaChast) < (other.celayaChast + other.drobnayaChast);
     }
 
     @Override
     public String toString() {
-        return "Имя: " + name + ", Телефон: " + phone + ", Email: " + (email != null ? email : "Нет");
-    }
-}
-
-class PhoneBook {
-    private List<PhoneBookEntry> entries;
-
-    public PhoneBook() {
-        entries = new ArrayList<>();
+        return celayaChast + (drobnayaChast > 0 ? " + " + drobnayaChast : "");
     }
 
-    public void addEntry(String name, String phone, String email) {
-        PhoneBookEntry entry = new PhoneBookEntry(name, phone, email);
-        entries.add(entry);
-    }
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-    public void removeEntry(String name) {
-        entries.removeIf(entry -> entry.getName().equalsIgnoreCase(name));
-    }
+        System.out.print("Введите количество дробных чисел: ");
+        int n = scanner.nextInt();
+        DrobnoeChislo[] drobnyeChisla = new DrobnoeChislo[n];
 
-    public PhoneBookEntry findEntry(String name) {
-        for (PhoneBookEntry entry : entries) {
-            if (entry.getName().equalsIgnoreCase(name)) {
-                return entry;
+        // Ввод данных от пользователя
+        for (int i = 0; i < n; i++) {
+            System.out.print("Введите целую часть " + (i + 1) + ": ");
+            int celayaChast = scanner.nextInt();
+            System.out.print("Введите дробную часть " + (i + 1) + " (например, 0.5): ");
+            double drobnayaChast = scanner.nextDouble();
+            drobnyeChisla[i] = new DrobnoeChislo(celayaChast, drobnayaChast);
+        }
+
+        // Сортировка массива по возрастанию, используя пузырьковую сортировку
+        for (int i = 0; i < drobnyeChisla.length - 1; i++) {
+            for (int j = 0; j < drobnyeChisla.length - 1 - i; j++) {
+                if (drobnyeChisla[j].isLessThan(drobnyeChisla[j + 1])) {
+                    // Обмен местами
+                    DrobnoeChislo temp = drobnyeChisla[j];
+                    drobnyeChisla[j] = drobnyeChisla[j + 1];
+                    drobnyeChisla[j + 1] = temp;
+                }
             }
         }
-        return null;
-    }
 
-    public void sortEntriesByName() {
-        entries.sort(Comparator.comparing(PhoneBookEntry::getName));
-    }
-
-    public void sortEntriesByPhone() {
-        entries.sort(Comparator.comparing(PhoneBookEntry::getPhone));
-    }
-
-    public void display() {
-        for (PhoneBookEntry entry : entries) {
-            System.out.println(entry);
-        }
-    }
-}
-public class PhoneBookDemo {
-    public static void main(String[] args) {
-        PhoneBook phoneBook = new PhoneBook();
-
-        // Добавление записей
-        phoneBook.addEntry("Иванов Иван", "123-456", "ivanov@example.com");
-        phoneBook.addEntry("Петров Петр", "789-012", "petrov@example.com");
-        phoneBook.addEntry("Сидоров Сидор", "345-678", null);
-
-        System.out.println("Телефонный справочник:");
-        phoneBook.display();
-
-        // Поиск записи
-        System.out.println("\nПоиск записи 'Иванов Иван':");
-        PhoneBookEntry entry = phoneBook.findEntry("Иванов Иван");
-        if (entry != null) {
-            System.out.println(entry);
-        } else {
-            System.out.println("Запись не найдена.");
+        // Вывод отсортированного массива
+        System.out.println("Отсортированные дробные числа:");
+        for (DrobnoeChislo chislo : drobnyeChisla) {
+            System.out.println(chislo);
         }
 
-        // Удаление записи
-        System.out.println("\nУдаление записи 'Петров Петр'.");
-        phoneBook.removeEntry("Петров Петр");
-
-        System.out.println("Телефонный справочник после удаления:");
-        phoneBook.display();
-
-        // Сортировка записей
-        System.out.println("\nСортировка по имени:");
-        phoneBook.sortEntriesByName();
-        phoneBook.display();
-
-        System.out.println("\nСортировка по телефону:");
-        phoneBook.sortEntriesByPhone();
-        phoneBook.display();
+        scanner.close();
     }
 }
-
-
-▎Описание кода:
-
-1. PhoneBookEntry: Класс, представляющий одну запись телефонного справочника. Содержит имя, телефон и, при желании, email. Реализует метод toString() для удобного отображения информации.
-
-2. PhoneBook: Класс, представляющий телефонный справочник. Он содержит список записей и методы для работы с ни   - addEntry: добавляет новую запись.
-
-   • removeEntry: удаляет запись по имени.
-
-   • findEntry: ищет запись по имени.
-
-   • sortEntriesByName: сортирует записи по имени.
-
-   • sortEntriesByPhone: сортирует записи по телефону.
-
-   • display: отображает все записи в справочнике.
-
-3. PhoneBookDemo: Класс с методом main, который демонстрирует работу с классом PhoneBook. В нем создается экземпляр PhoneBook, добавляются записи, производится поиск, удаление и сортировка записей, а также выводится текущее состояние справочника.
-
-Этот код можно расширять, добавляя дополнительные функции, такие как сохранение и загрузка записей из файла или работа с пользовательским вводом.
