@@ -1,14 +1,53 @@
-1. Печатает введённую строку и выходит
-2. Печатает введённую строку в цикле и выходит по Ctrl+D
-3. Добавим команду для выхода (exit и \q)
-===
-4. Добавим историю введённых команд и её сохранения в файл
-5. Добавим команду echo
-6. Добавим проверку введённой команды
-7. Добавим команду по выводу переменной окружения (\e $PATH)
-8. Выполняем указанный бинарник
-9. По сигналу SIGHUP вывести "Configuration reloaded"
-10. По `\l /dev/sda` получить информацию о разделах в системе
-11. Поает введёподключить VFS в /tmp/vfs со списком задач в планировщике
-12. Пооку в цикле и выхполучить дамп памяти процесса
-Вот пример задания на shell
+import java.util.Scanner;
+
+class MyException extends Exception
+{
+String name;
+int d,m,y;
+
+     MyException(String name,int d,int m,int y) {
+         super(name);
+         this.d=d;
+         this.m=m;
+         this.y=y;
+    }
+String getDate(){
+return d+"."+m+"."+y;
+}
+}
+
+ class Data {
+int d,m,y;
+Data (int d,int m,int y) throws MyException
+{
+    if(d>31||m>12||y<0||d<0||m<0) throw new MyException("Некорректная дата",d,m,y);
+ this.d=d;
+ this.m=m;
+ this.y=y;
+}
+// добавить метод вывода данных
+// метод - прибавить к дате заданное кол-во дней с получением новой даты
+// метод-вычислить номер дня от начала года
+// вычислит кол дней между двумя датами 
+// вычит из даты n кол дней и получение новой даты
+}
+public class ExceptionsMy {
+
+    
+    public static void main(String[] args) {
+       Scanner sc=new Scanner (System.in);
+       System.out.println("Введите день");
+        int d=sc.nextInt(); 
+        System.out.println("Введите месяц");
+        int m=sc.nextInt();  
+        System.out.println("Введите год");
+        int y=sc.nextInt();  
+        try(
+                Data date=new Data(d,m,y);
+                //вызов методов
+            }
+        catch ( MyException e)
+        {System.out.println(e.getMessage()+" "+e.getDate());}
+    
+}
+}
