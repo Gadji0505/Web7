@@ -2,17 +2,17 @@
 #include <vector>
 #include <thread>
 #include <mutex>
-
+using namespace std;
 const int SIZE = 9;
-std::mutex mtx;
+mutex mtx;
 
-// Определим структуру для представления судоку
-using Sudoku = std::vector<std::vector<int>>;
+// Структура для представления судоку
+using Sudoku = vector<vector<int>>;
 
 // Функция для проверки правильности числа в заданной позиции
 bool isValid(const Sudoku& board, int row, int col, int num) {
     for (int x = 0; x < SIZE; x++) {
-        if (board[row][x] == num || board[x][col] == num || 
+        if (board[row][x] == num || board[x][col] == num ||
             board[row - row % 3 + x / 3][col - col % 3 + x % 3] == num) {
             return false;
         }
@@ -54,13 +54,14 @@ bool solveSudoku(Sudoku& board) {
 
 // Функция для работы одного потока
 void threadSolve(Sudoku& board, bool& foundSolution) {
-    std::lock_guard<std::mutex> guard(mtx);
+    lock_guard<mutex> guard(mtx);
     if (!foundSolution) {
         foundSolution = solveSudoku(board);
     }
 }
 
 int main() {
+    setlocale(LC_ALL, "RU");
     Sudoku board = {
         {5, 3, 0, 0, 7, 0, 0, 0, 0},
         {6, 0, 0, 1, 9, 5, 0, 0, 0},
@@ -74,24 +75,25 @@ int main() {
     };
 
     bool foundSolution = false;
-    
+
     // Создаем два потока для решения судоку
-    std::thread thread1(threadSolve, std::ref(board), std::ref(foundSolution));
-    std::thread thread2(threadSolve, std::ref(board), std::ref(foundSolution));
-    
+    thread thread1(threadSolve, ref(board), ref(foundSolution));
+    thread thread2(threadSolve, ref(board), ref(foundSolution));
+
     thread1.join();
     thread2.join();
 
     if (foundSolution) {
-        std::cout << "Решение найдено:\n";
+        cout << "Решение найдено:\n";
         for (const auto& row : board) {
             for (int num : row) {
-                std::cout << num << " ";
+                cout << num << " ";
             }
-            std::cout << std::endl;
+            cout << endl;
         }
-    } else {
-        std::cout << "Решение не найдено." << std::endl;
+    }
+    else {
+        cout << "Решение не найдено." << endl;
     }
 
     return 0;
