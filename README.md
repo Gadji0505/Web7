@@ -1,53 +1,98 @@
-import java.util.Scanner;
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <mutex>
 
-class MyException extends Exception
-{
-String name;
-int d,m,y;
+const int SIZE = 9;
+std::mutex mtx;
 
-     MyException(String name,int d,int m,int y) {
-         super(name);
-         this.d=d;
-         this.m=m;
-         this.y=y;
+// Определим структуру для представления судоку
+using Sudoku = std::vector<std::vector<int>>;
+
+// Функция для проверки правильности числа в заданной позиции
+bool isValid(const Sudoku& board, int row, int col, int num) {
+    for (int x = 0; x < SIZE; x++) {
+        if (board[row][x] == num || board[x][col] == num || 
+            board[row - row % 3 + x / 3][col - col % 3 + x % 3] == num) {
+            return false;
+        }
     }
-String getDate(){
-return d+"."+m+"."+y;
-}
+    return true;
 }
 
- class Data {
-int d,m,y;
-Data (int d,int m,int y) throws MyException
-{
-    if(d>31||m>12||y<0||d<0||m<0) throw new MyException("Некорректная дата",d,m,y);
- this.d=d;
- this.m=m;
- this.y=y;
-}
-// добавить метод вывода данных
-// метод - прибавить к дате заданное кол-во дней с получением новой даты
-// метод-вычислить номер дня от начала года
-// вычислит кол дней между двумя датами 
-// вычит из даты n кол дней и получение новой даты
-}
-public class ExceptionsMy {
+// Функция для решения судоку
+bool solveSudoku(Sudoku& board) {
+    int row, col;
+    bool empty = true;
 
-    
-    public static void main(String[] args) {
-       Scanner sc=new Scanner (System.in);
-       System.out.println("Введите день");
-        int d=sc.nextInt(); 
-        System.out.println("Введите месяц");
-        int m=sc.nextInt();  
-        System.out.println("Введите год");
-        int y=sc.nextInt();  
-        try(
-                Data date=new Data(d,m,y);
-                //вызов методов
+    // Поиск пустой ячейки
+    for (row = 0; row < SIZE; row++) {
+        for (col = 0; col < SIZE; col++) {
+            if (board[row][col] == 0) {
+                empty = false;
+                break;
             }
-        catch ( MyException e)
-        {System.out.println(e.getMessage()+" "+e.getDate());}
-    
+        }
+        if (!empty) break;
+    }
+
+    if (empty) return true; // Судоку уже решено
+
+    for (int num = 1; num <= 9; num++) {
+        if (isValid(board, row, col, num)) {
+            board[row][col] = num; // Пробуем данное число
+
+            // Рекурсивный вызов для следующей пустой ячейки
+            if (solveSudoku(board)) {
+                return true;
+            }
+            board[row][col] = 0; // Возвращаемся, откат
+        }
+    }
+    return false;
 }
+
+// Функция для работы одного потока
+void threadSolve(Sudoku& board, bool& foundSolution) {
+    std::lock_guard<std::mutex> guard(mtx);
+    if (!foundSolution) {
+        foundSolution = solveSudoku(board);
+    }
+}
+
+int main() {
+    Sudoku board = {
+        {5, 3, 0, 0, 7, 0, 0, 0, 0},
+        {6, 0, 0, 1, 9, 5, 0, 0, 0},
+        {0, 9, 8, 0, 0, 0, 0, 6, 0},
+        {8, 0, 0, 0, 6, 0, 0, 0, 3},
+        {4, 0, 0, 8, 0, 3, 0, 0, 1},
+        {7, 0, 0, 0, 2, 0, 0, 0, 6},
+        {0, 6, 0, 0, 0, 0, 2, 8, 0},
+        {0, 0, 0, 4, 1, 9, 0, 0, 5},
+        {0, 0, 0, 0, 8, 0, 0, 7, 9}
+    };
+
+    bool foundSolution = false;
+    
+    // Создаем два потока для решения судоку
+    std::thread thread1(threadSolve, std::ref(board), std::ref(foundSolution));
+    std::thread thread2(threadSolve, std::ref(board), std::ref(foundSolution));
+    
+    thread1.join();
+    thread2.join();
+
+    if (foundSolution) {
+        std::cout << "Решение найдено:\n";
+        for (const auto& row : board) {
+            for (int num : row) {
+                std::cout << num << " ";
+            }
+            std::cout << std::endl;
+        }
+    } else {
+        std::cout << "Решение не найдено." << std::endl;
+    }
+
+    return 0;
 }
